@@ -1,7 +1,7 @@
 from scipy.stats import poisson
 import numpy as np
 import networkx as nx
-
+import warnings
 from matchingmarkets.agent import Agent
 from matchingmarkets.metaalgorithms import meta_always
 from matchingmarkets.generators.basic import *
@@ -9,12 +9,21 @@ from matchingmarkets.algorithms.basic import *
 
 import matplotlib
 try:
+    rif = matplotlib.cbook._get_running_interactive_framework()
+    if rif=='headless':
+         raise RuntimeError(rif)
     matplotlib.use('qt5agg')
+    import matplotlib.pyplot as plt
     CANT_PLOT = False
+except RuntimeError as re:
+     warnings.warn(f"You have '{re}' interavtive framework. Using '{matplotlib.get_backend()}' instead of 'qt5agg'", RuntimeWarning)
+     import matplotlib.pyplot as plt
+     CANT_PLOT = False
 except ImportError as ie:
     CANT_PLOT = True
-    print(f"Can't import plotting backend: \n {ie}")
-import matplotlib.pyplot as plt
+    warnings.warn(f"Can't import plotting backend: \n {ie}", ImportWarning)
+finally:
+    import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
 
@@ -96,7 +105,7 @@ class Market:
                 self.Graph = nx.DiGraph()
         if self.plots_on:
             if CANT_PLOT:
-                print("WARNING: Cant plot dur to qt5agg backend import error")
+                print("WARNING: Cant plot due to qt5agg backend import error")
                 self.plots_on = False
             plt.ion()  # Interactive plotting
             self.has_graph = True
